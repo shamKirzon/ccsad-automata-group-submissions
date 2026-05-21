@@ -442,6 +442,14 @@ table td {
 .result-success { color: #48463D !important; border-left: 4px solid #48463D; padding-left: 1rem; }
 .result-error { color: #ff5555 !important; border-left: 4px solid #ff5555; padding-left: 1rem; }
 .result-info { color: rgba(72, 70, 61, 0.7) !important; font-size: 1.8rem; }
+.result-info {
+    word-break: normal;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+.result-info span {
+    display: inline-block;
+}
 
 /* utils */
 .bg-yorha { padding: 4rem 10%; width: 100%; }

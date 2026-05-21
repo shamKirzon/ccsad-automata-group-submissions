@@ -1,4 +1,3 @@
-
 const state = {
     currentPage: 'home',
     activeStudy: null,
@@ -128,26 +127,26 @@ const STUDIES = {
         description: "Integer Division Theorem Implementation",
         explanation: "This module calculates the quotient (q) and remainder (r) for two positive integers (m and n) such that m = n(q) + r. The algorithm automatically designates the larger input as the dividend (m) to ensure a valid Euclidean division result.",
         template: `
-            <div class="form-group">
-                <label>Dividend (m):</label>
-                <input type="number" id="div-m" class="form-input" value="0">
-            </div>
-            <div class="form-group">
-                <label>Divisor (n):</label>
-                <input type="number" id="div-n" class="form-input" value="0">
-                <button class="btn-primary" onclick="STUDIES.division.solve()">CALCULATE</button>
-            </div>
-            <div id="div-result" class="result-area" style="padding:1.5rem; margin-top:2rem;"></div>
-        `,
+        <div class="form-group">
+            <label>Number 1 (m):</label>
+            <input type="number" id="div-m" class="form-input" value="0">
+        </div>
+        <div class="form-group">
+            <label>Number 2 (n):</label>
+            <input type="number" id="div-n" class="form-input" value="0">
+            <button class="btn-primary" onclick="STUDIES.division.solve()">CALCULATE</button>
+        </div>
+        <div id="div-result" class="result-area" style="padding:1.5rem; margin-top:2rem;"></div>
+    `,
         solve: function () {
-            let m = parseInt(document.getElementById('div-m').value);
-            let n = parseInt(document.getElementById('div-n').value);
-            const res = document.getElementById('div-result');
-            if (m <= 0 || n <= 0) { res.innerHTML = '<p class="result-error">ERROR: POSITIVE_INTEGERS_REQUIRED</p>'; return; }
-            if (n > m) [m, n] = [n, m];
-            const q = Math.floor(m / n), r = m % n;
-            res.innerHTML = `<p class="result-success">${m} = ${n}(${q}) + ${r}</p><p class="result-info">Quotient: ${q} | Remainder: ${r}</p>`;
-        }
+        let m = parseInt(document.getElementById('div-m').value);
+        let n = parseInt(document.getElementById('div-n').value);
+        const res = document.getElementById('div-result');
+        if (m <= 0 || n <= 0) { res.innerHTML = '<p class="result-error">ERROR: POSITIVE_INTEGERS_REQUIRED</p>'; return; }
+        if (n > m) { res.innerHTML = '<p class="result-error">ERROR: DIVISOR CANNOT BE GREATER THAN DIVIDEND</p>'; return; }
+        const q = Math.floor(m / n), r = m % n;
+        res.innerHTML = `<p class="result-success">${m} = ${n}(${q}) + ${r}</p><p class="result-info">Quotient: ${q} | Remainder: ${r}</p>`;
+    }
     },
     euclidean: {
         title: "03_EUCLIDEAN_ALGORITHM",
@@ -166,22 +165,22 @@ const STUDIES = {
             <div id="euc-result" class="result-area" style="padding:1.5rem; margin-top:2rem;"></div>
         `,
         solve: function () {
-            let m = parseInt(document.getElementById('euc-m').value);
-            let n = parseInt(document.getElementById('euc-n').value);
-            const res = document.getElementById('euc-result');
-            if (m <= 0 || n <= 0) { res.innerHTML = '<p class="result-error">ERROR: POSITIVE_INTEGERS_REQUIRED</p>'; return; }
-            const oM = m, oN = n;
-            if (n > m) [m, n] = [n, m];
-            let out = `<p class="result-info">Processing ${oM}, ${oN}...</p>`;
-            while (n !== 0) {
-                const q = Math.floor(m / n), r = m % n;
-                out += `<p class="result-info"> > ${m} = ${n}(${q}) + ${r}</p>`;
-                m = n; n = r;
-            }
-            const gcd = m, lcm = (oM * oN) / gcd;
-            out += `<p class="result-success">GCD: ${gcd} | LCM: ${lcm}</p>`;
-            res.innerHTML = out;
+        let m = parseInt(document.getElementById('euc-m').value);
+        let n = parseInt(document.getElementById('euc-n').value);
+        const res = document.getElementById('euc-result');
+        if (m <= 0 || n <= 0) { res.innerHTML = '<p class="result-error">ERROR: POSITIVE_INTEGERS_REQUIRED</p>'; return; }
+        if (n > m) { res.innerHTML = '<p class="result-error">ERROR: DIVISOR CANNOT BE GREATER THAN DIVIDEND</p>'; return; }
+        const oM = m, oN = n;
+        let out = '';
+        while (n !== 0) {
+            const q = Math.floor(m / n), r = m % n;
+            out += `<p class="result-info">${m} = ${n}(${q}) + ${r}</p>`;
+            m = n; n = r;
         }
+        const gcd = m, lcm = (oM * oN) / gcd;
+        out += `<p class="result-success">GCD: ${gcd} | LCM: ${lcm}</p>`;
+        res.innerHTML = out;
+    }
     },
     collatz: {
         title: "04_COLLATZ_SEQUENCE",
@@ -204,7 +203,7 @@ const STUDIES = {
                 n = (n % 2 !== 0) ? (n * 3 + 1) : (n / 2);
                 seq.push(n);
             }
-            res.innerHTML = `<p class="result-success">Sequence Length: ${seq.length}</p><p class="result-info" style="word-break:break-all;">${seq.join(' > ')}</p>`;
+            res.innerHTML = `<p class="result-success">Sequence Length: ${seq.length}</p><p class="result-info"><span>${seq.join('</span>, <span>')}</span></p>`;
         }
     },
     recursions: {
@@ -227,15 +226,31 @@ const STUDIES = {
         mode: 'fibonacci',
         setMode: function (m) { this.mode = m; document.getElementById('rec-label').textContent = `Target Terms [ ${m.charAt(0).toUpperCase() + m.slice(1)} ]:`; },
         solve: function () {
-            let terms = parseInt(document.getElementById('rec-terms').value);
-            const res = document.getElementById('rec-result');
-            if (terms <= 0) { res.innerHTML = '<p class="result-error">ERROR: POSITIVE_INT_REQUIRED</p>'; return; }
-            let seq = [];
-            if (this.mode === 'fibonacci') { let a = 0, b = 1; for (let i = 0; i < terms; i++) { seq.push(a);[a, b] = [b, a + b]; } }
-            else if (this.mode === 'lucas') { let a = 2, b = 1; for (let i = 0; i < terms; i++) { seq.push(a);[a, b] = [b, a + b]; } }
-            else if (this.mode === 'tribonacci') { let a = 0, b = 0, c = 1; for (let i = 0; i < terms; i++) { seq.push(a);[a, b, c] = [b, c, a + b + c]; } }
-            res.innerHTML = `<p class="result-success">${this.mode.toUpperCase()} Output:</p><p class="result-info" style="word-break:break-all;">${seq.join(', ')}</p>`;
+        let terms = parseInt(document.getElementById('rec-terms').value);
+        const res = document.getElementById('rec-result');
+        
+        const minTerms = (this.mode === 'tribonacci') ? 4 : 3;
+        if (terms < minTerms) { 
+            res.innerHTML = `<p class="result-error">ERROR: MINIMUM ${minTerms} TERMS REQUIRED FOR ${this.mode.toUpperCase()}</p>`; 
+            return; 
         }
+
+        let seq = [];
+        if (this.mode === 'fibonacci') {
+            let a = 0, b = 1;
+            for (let i = 0; i < terms + 2; i++) { seq.push(a); [a, b] = [b, a + b]; }
+            seq = seq.slice(2);
+        } else if (this.mode === 'lucas') {
+            let a = 2, b = 1;
+            for (let i = 0; i < terms + 2; i++) { seq.push(a); [a, b] = [b, a + b]; }
+            seq = seq.slice(2);
+        } else if (this.mode === 'tribonacci') {
+            let a = 0, b = 0, c = 1;
+            for (let i = 0; i < terms + 3; i++) { seq.push(a); [a, b, c] = [b, c, a + b + c]; }
+            seq = seq.slice(3);
+        }
+        res.innerHTML = `<p class="result-success">${this.mode.toUpperCase()} Output:</p><p class="result-info"><span>${seq.join('</span>, <span>')}</span></p>`;
+    }
     }
 };
 
