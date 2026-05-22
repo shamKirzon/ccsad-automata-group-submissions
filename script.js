@@ -42,14 +42,14 @@ const CASE_STUDIES = {
   euclidean: {
     id: 'euclidean',
     name: 'Euclidean Algorithm (GCD & LCM)',
-    discussion: 'The Euclidean Algorithm is an efficient method for computing the greatest common divisor (GCD) of two integers. The Least Common Multiple (LCM) can then be found using the relationship: LCM(a, b) = |a*b| / GCD(a, b).',
+    discussion: 'The Euclidean Algorithm is an efficient method for computing the greatest common divisor (GCD) of two integers. The Least Common Multiple (LCM) can then be found using the relationship: LCM(a, b) = |a x b| / GCD(a, b).',
     formula: 'GCD(a, b) & LCM(a, b)'
   },
   collatz: {
     id: 'collatz',
     name: 'Collatz Sequence',
     discussion: 'The Collatz conjecture is a conjecture in mathematics that concerns a sequence defined as follows: start with any positive integer n. Then each term is obtained from the previous term as follows: if the previous term is even, the next term is one half of the previous term. If the previous term is odd, the next term is 3 times the previous term plus 1. The conjecture is that no matter what value of n, the sequence will always reach 1.',
-    formula: 'n/2 (even), 3n+1 (odd)'
+    formula: 'n ÷ 2 (even), 3 x n + 1 (odd)'
   }
 };
 
@@ -61,7 +61,7 @@ let inputBValue = '';
 let typingInterval = null;
 
 // --- Utilities ---
-const formatNumber = (num) => num.toLocaleString();
+const formatNumber = (num) => String(num);
 
 const checkPalindrome = (input) => {
   const cleanInput = input.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -217,6 +217,7 @@ const selectActivity = (type) => {
         imgContainer.innerHTML = `<img src="public/${config.id}-discussion.png" alt="${config.name} Discussion">`;
         imgContainer.style.display = 'block';
     } else {
+        imgContainer.innerHTML = '';
         imgContainer.style.display = 'none';
     }
     
@@ -225,7 +226,14 @@ const selectActivity = (type) => {
     discussionEl.innerText = '';
     if (typingInterval) clearInterval(typingInterval);
     
-    const textToType = config.formula || config.discussion;
+    // Show Formula if available, else Discussion
+    // Special case for Euclidean: show description instead of formula
+    const textToType = (type === 'euclidean') ? config.discussion : (config.formula || config.discussion);
+    const labelEl = document.querySelector('.discussion p strong');
+    if (labelEl) {
+        labelEl.innerText = (type === 'euclidean' || !config.formula) ? 'Description:' : 'Formula:';
+    }
+
     let i = 0;
     typingInterval = setInterval(() => {
         discussionEl.innerText += textToType.charAt(i);
@@ -255,9 +263,12 @@ const renderInputs = () => {
         `;
     } else {
         const isPalindrome = selectedActivity === 'palindrome';
+        const isSequence = !!SEQUENCES[selectedActivity];
+        const labelText = isPalindrome ? 'Input Text: ' : (isSequence ? 'Input number of terms: ' : 'Input Number: ');
+        
         inputSection.innerHTML = `
             <div class="input-group">
-                <label>${isPalindrome ? 'Input Text: ' : 'Input Number: '}</label>
+                <label>${labelText}</label>
                 <input type="${isPalindrome ? 'text' : 'number'}" id="input-main" placeholder="${isPalindrome ? 'e.g. racecar' : 'e.g. 5'}" oninput="handleInput(event, 'main')">
             </div>
         `;
@@ -286,21 +297,38 @@ const renderResults = () => {
 
     // Warning logic
     let warning = null;
+    
+    // Check for decimals in numeric inputs
+    const isDecimal = (val) => val && val.includes('.') && !isNaN(parseFloat(val));
+
     if (SEQUENCES[selectedActivity]) {
-        const res = generateSequence(SEQUENCES[selectedActivity], inputValue);
-        if (res.status !== 'Valid' && inputValue) warning = res.message;
+        if (isDecimal(inputValue)) {
+            warning = 'Please enter a whole number.';
+        } else {
+            const res = generateSequence(SEQUENCES[selectedActivity], inputValue);
+            if (res.status !== 'Valid' && inputValue) warning = res.message;
+        }
     } else if (selectedActivity === 'division-algorithm' || selectedActivity === 'euclidean') {
-        const a = parseInt(inputValue);
-        const b = parseInt(inputBValue);
-        
-        if (inputValue && isNaN(a)) warning = 'First integer (a) must be a numeric value.';
-        else if (inputBValue && isNaN(b)) warning = 'Second integer (b) must be a numeric value.';
-        else if (inputValue && !isNaN(a) && a <= 0) warning = 'First integer (a) must be a positive number (greater than 0).';
-        else if (inputBValue && !isNaN(b) && b <= 0) warning = 'Second integer (b) must be a positive number (greater than 0).';
+        if (isDecimal(inputValue) || isDecimal(inputBValue)) {
+            warning = 'Both inputs must be whole numbers (integers).';
+        } else {
+            const a = parseInt(inputValue);
+            const b = parseInt(inputBValue);
+            
+            if (inputValue && isNaN(a)) warning = 'First integer (a) must be a numeric value.';
+            else if (inputBValue && isNaN(b)) warning = 'Second integer (b) must be a numeric value.';
+            else if (inputValue && !isNaN(a) && a <= 0) warning = 'First integer (a) must be a positive number (greater than 0).';
+            else if (inputBValue && !isNaN(b) && b <= 0) warning = 'Second integer (b) must be a positive number (greater than 0).';
+        }
     } else if (selectedActivity === 'collatz') {
-        const n = parseInt(inputValue);
-        if (inputValue && isNaN(n)) warning = 'Please enter a numeric integer.';
-        else if (inputValue && !isNaN(n) && n <= 0) warning = 'Collatz sequence requires a positive integer.';
+        if (isDecimal(inputValue)) {
+            warning = 'Please enter a numeric integer.';
+        } else {
+            const n = parseInt(inputValue);
+            if (inputValue && isNaN(n)) warning = 'Please enter a numeric integer.';
+            else if (inputValue && !isNaN(n) && n <= 0) warning = 'Collatz sequence requires a positive integer.';
+            else if (inputValue && !isNaN(n) && n % 2 === 0) warning = 'The system doesn\'t take positive even integers since it\'s a rule set needed to be added.';
+        }
     }
 
     if (warning) {
@@ -382,7 +410,7 @@ const renderResults = () => {
                 <div class="results-list">
                     <p>The Collatz sequence for ${formatNumber(n)} is:</p>
                     <div class="scrollable-results">
-                        ${seq.map(formatNumber).join(' → ')}
+                        ${seq.map(formatNumber).join(', ')}
                     </div>
                 </div>
             `;
