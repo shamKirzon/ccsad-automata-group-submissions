@@ -97,7 +97,7 @@ const topicConfig = {
   fibonacci: {
     title: "Fibonacci Numbers",
     description:
-      "Generates the Fibonacci sequence. Each term is the sum of the two preceding terms. Starts at F(0)=0, F(1)=1.",
+      "Generates the Fibonacci sequence. Each term is the sum of the two preceding terms. Starts at F₀=0, F₁=1.",
     inputHTML: `
       <input id="inp1" class="input-field" type="number" placeholder="Number of terms..." />
       <span id="errMsg" class="error-msg"></span>
@@ -108,7 +108,7 @@ const topicConfig = {
   tribonacci: {
     title: "Tribonacci Numbers",
     description:
-      "Generates the Tribonacci sequence. Each term is the sum of the three preceding terms. Starts at T(0)=0, T(1)=0, T(2)=1.",
+      "Generates the Tribonacci sequence. Each term is the sum of the three preceding terms. Starts at T₀=0, T₁=0, T₂=1.",
     inputHTML: `
       <input id="inp1" class="input-field" type="number" placeholder="Number of terms..." />
       <span id="errMsg" class="error-msg"></span>
@@ -119,7 +119,7 @@ const topicConfig = {
   lucas: {
     title: "Lucas Numbers",
     description:
-      "Generates the Lucas sequence. Like Fibonacci but starts at L(0)=2, L(1)=1. Named after French mathematician Édouard Lucas.",
+      "Generates the Lucas sequence. Like Fibonacci but starts at L₀=2, L₁=1. Named after French mathematician Édouard Lucas.",
     inputHTML: `
       <input id="inp1" class="input-field" type="number" placeholder="Number of terms..." />
       <span id="errMsg" class="error-msg"></span>
@@ -183,6 +183,19 @@ function runCompute(topicId) {
 }
 
 // Section 6: formatResult() — Output Formatting
+function toSubscript(num) {
+  const subscripts = "₀₁₂₃₄₅₆₇₈₉";
+  return num
+    .toString()
+    .split("")
+    .map((digit) => subscripts[digit])
+    .join("");
+}
+
+function formatNum(num) {
+  return Number(num).toLocaleString();
+}
+
 function formatResult(topicId, res) {
   const divider = "---------------------------------";
 
@@ -200,12 +213,14 @@ function formatResult(topicId, res) {
     case "division":
       return (
         `${divider}\n` +
-        `EQUATION  : ${res.m} = ${res.n}(${res.q}) + ${res.r}\n` +
+        `EQUATION  : ${formatNum(res.m)} = ${formatNum(res.n)}(${formatNum(
+          res.q,
+        )}) + ${formatNum(res.r)}\n` +
         `${divider}\n` +
-        `DIVIDEND  : ${res.m}\n` +
-        `DIVISOR   : ${res.n}\n` +
-        `QUOTIENT  : ${res.q}\n` +
-        `REMAINDER : ${res.r}\n` +
+        `DIVIDEND  : ${formatNum(res.m)}\n` +
+        `DIVISOR   : ${formatNum(res.n)}\n` +
+        `QUOTIENT  : ${formatNum(res.q)}\n` +
+        `REMAINDER : ${formatNum(res.r)}\n` +
         `${divider}`
       );
 
@@ -216,9 +231,9 @@ function formatResult(topicId, res) {
         res.steps.join("\n") +
         "\n" +
         `${divider}\n` +
-        `INTEGERS  : ${res.originalM}, ${res.originalN}\n` +
-        `GCD       : ${res.gcd}\n` +
-        `LCM       : ${res.lcm}\n` +
+        `INTEGERS  : ${formatNum(res.originalM)}, ${formatNum(res.originalN)}\n` +
+        `GCD       : ${formatNum(res.gcd)}\n` +
+        `LCM       : ${formatNum(res.lcm)}\n` +
         `${divider}`
       );
 
@@ -226,7 +241,7 @@ function formatResult(topicId, res) {
       return (
         `${divider}\n` +
         `The Collatz sequence are:\n` +
-        `${res.sequence.join(", ")}\n` +
+        `${res.sequence.map(formatNum).join(", ")}\n` +
         `${divider}\n` +
         `TOTAL STEPS : ${res.sequence.length}\n` +
         `${divider}`
@@ -236,7 +251,8 @@ function formatResult(topicId, res) {
       return (
         `${divider}\n` +
         `FIBONACCI SEQUENCE:\n` +
-        `${res.sequence.join(", ")}\n` +
+        res.sequence.join(", ") +
+        "\n" +
         `${divider}\n` +
         `TERMS GENERATED : ${res.sequence.length}\n` +
         `${divider}`
@@ -246,7 +262,8 @@ function formatResult(topicId, res) {
       return (
         `${divider}\n` +
         `TRIBONACCI SEQUENCE:\n` +
-        `${res.sequence.join(", ")}\n` +
+        res.sequence.join(", ") +
+        "\n" +
         `${divider}\n` +
         `TERMS GENERATED : ${res.sequence.length}\n` +
         `${divider}`
@@ -256,7 +273,8 @@ function formatResult(topicId, res) {
       return (
         `${divider}\n` +
         `LUCAS SEQUENCE:\n` +
-        `${res.sequence.join(", ")}\n` +
+        res.sequence.join(", ") +
+        "\n" +
         `${divider}\n` +
         `TERMS GENERATED : ${res.sequence.length}\n` +
         `${divider}`
@@ -348,10 +366,12 @@ function computeEuclidean(input1, input2) {
     const r = m % n;
 
     if (r === 0) {
-      steps.push(`${m} = ${n}(${q})`);
+      steps.push(`${formatNum(m)} = ${formatNum(n)}(${formatNum(q)})`);
       gcd = n;
     } else {
-      steps.push(`${m} = ${n}(${q}) + ${r}`);
+      steps.push(
+        `${formatNum(m)} = ${formatNum(n)}(${formatNum(q)}) + ${formatNum(r)}`,
+      );
     }
 
     m = n;
